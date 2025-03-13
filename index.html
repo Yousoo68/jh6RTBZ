@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일기 독자 모음</title>
+    <style>
+        body {
+            font-family: 'Serif', serif;
+            margin: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+        .bold {
+            font-weight: bold;
+        }
+        .thin {
+            font-weight: normal; /* 얇은체로 설정 */
+        }
+        .clickable {
+            cursor: pointer;
+        }
+        .text-view {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            font-weight: bold;
+            z-index: 1000;
+            display: none;
+        }
+        .prime {
+            color: rgb(204, 64, 111);
+        }
+        .basic {
+            color: rgb(240, 193, 53);
+        }
+        .advanced {
+            color: rgb(237, 60, 66);
+        }
+    </style>
+</head>
+<body>
+    <div id="inputSection">
+        <div style="font-weight: bold; font-size: 20px;">당신은 어느 측 독자 이신가요?</div>
+        <div style="font-size: 16px;">쁘띠유수𝐨𝐫섹시유수</div>
+        <input type="text" id="userInput" placeholder="여기에 입력하세요">
+        <button onclick="processInput()">확인</button>
+    </div>
+    <div id="nameListSection" class="hidden">
+        <div id="sortInfo"></div>
+        <div style="margin-top: 10px;">
+            <button onclick="sortNames('new')">⇅ 새로운 독자순</button>
+            <button onclick="sortNames('old')">⇅ 오래된 독자순</button>
+            <button onclick="sortNames('alpha')">⇅ 가나다순</button>
+        </div>
+        <div id="nameList"></div>
+    </div>
+    <div id="textView" class="text-view"></div>
+
+    <script>
+        const pttyNames = ["김기범", "이예은", "김용한", "노우주", "권혁", "신민석", "김성진", "김채준", "서하경", "박진감", "천승일", "이상훈", "문성빈", "송윤건", "한도연", "고은평", "이준", "전푸름", "김성민", "이민준", "이수빈", "심규현", "황선우", "김주호", "정선우", "정성엽", "이수호", "윤서준", "방지원", "문형석", "신종환", "정세윤", "송인호", "김명준", "안현주", "한채민", "최서연", "김예빈", "김봄", "신홍익", "송지원", "김건우", "홍서형", "강현민", "채호", "손현민", "이효은"];
+        const sexyNames = ["이수호", "한도연", "이찬희", "김채준", "고은평", "송지원", "신민석", "정세윤", "신홍익", "안현주", "권혁", "유승민", "김주호", "이준", "김용한", "문형석", "송윤건", "이민준", "황선우", "김경민", "김형민", "노우주", "이상헌", "김반디", "방지원", "윤서준", "한지승", "강현민", "신종환", "정선우", "손현민", "천승일", "방상호", "노지민", "김성민", "송인호", "권민준", "심규현", "김명준", "김건우"];
+        const primeReaders = ["한지승", "강현민", "권민준", "김건우", "김명준", "김형민", "노우주", "윤서준", "손현민", "송인호", "이민준", "정세윤", "황선우"];
+        const basicReaders = ["김반디", "문형석", "송지원", "노지민", "이상헌", "이수호", "김성민"];
+
+        let currentListType = ''; // 현재 표시된 목록 타입 ('ptty' 또는 'sexy')
+
+        function processInput() {
+            const input = document.getElementById('userInput').value;
+            const inputSection = document.getElementById('inputSection');
+            const nameListSection = document.getElementById('nameListSection');
+            const nameList = document.getElementById('nameList');
+            const sortInfo = document.getElementById('sortInfo');
+
+            inputSection.classList.add('hidden');
+            nameListSection.classList.remove('hidden');
+            nameList.innerHTML = '';
+
+            if (input === '쁘띠유수') {
+                currentListType = 'ptty';
+                sortInfo.innerHTML = '소괄호로 표시 된 이름들은 섹시유수 독자임과 동시에 쁘띠유수 독자임을 구분 지은 것 입니다. 정렬버튼(⇅)으로 새로운 독자순(기본), 오래된 독자순, 가나다순으로 보실 수 있습니다.';
+                pttyNames.forEach(name => {
+                    const nameElement = document.createElement('div');
+                    if (sexyNames.includes(name)) {
+                        nameElement.innerHTML = `<span class="thin">(${name})</span>`; // 소괄호로 감싸고 얇은체로 설정
+                        nameElement.classList.add('bold');
+                    } else {
+                        nameElement.textContent = name;
+                    }
+                    nameList.appendChild(nameElement);
+                });
+            } else if (input === '섹시유수') {
+                currentListType = 'sexy';
+                sortInfo.innerHTML = '정렬버튼(⇅)으로 새로운 독자순(기본), 오래된 독자순, 가나다순으로 보실 수 있습니다.<br><span style="color:red;">단, 섹시유수 독자는 강등, 재승급으로 인한 팔로워 변동이 잦기 때문에 오래된 독자순 또는 새로운 독자순이 불확실 할 수 있습니다.</span>';
+                sexyNames.forEach(name => {
+                    const nameElement = document.createElement('div');
+                    nameElement.textContent = name;
+                    nameElement.classList.add('clickable');
+                    nameElement.onclick = () => showTextView(name);
+                    nameList.appendChild(nameElement);
+                });
+            }
+            sortNames('new');
+        }
+
+        function showTextView(name) {
+            const textView = document.getElementById('textView');
+            textView.style.display = 'block';
+            if (primeReaders.includes(name)) {
+                textView.className = 'text-view prime';
+                textView.textContent = '프라임(Prime) 독자';
+            } else if (basicReaders.includes(name)) {
+                textView.className = 'text-view basic';
+                textView.textContent = '베이직(Basic) 독자';
+            } else {
+                textView.className = 'text-view advanced';
+                textView.textContent = '어드밴스드(Advanced) 독자';
+            }
+            setTimeout(() => {
+                textView.style.display = 'none';
+            }, 1000);
+        }
+
+        function sortNames(order) {
+            const nameList = document.getElementById('nameList');
+            const names = Array.from(nameList.children);
+            names.sort((a, b) => {
+                const nameA = a.textContent.replace(/[()]/g, '');
+                const nameB = b.textContent.replace(/[()]/g, '');
+                if (currentListType === 'ptty') {
+                    if (order === 'new') {
+                        return pttyNames.indexOf(nameA) - pttyNames.indexOf(nameB);
+                    } else if (order === 'old') {
+                        return pttyNames.indexOf(nameB) - pttyNames.indexOf(nameA);
+                    } else if (order === 'alpha') {
+                        return nameA.localeCompare(nameB);
+                    }
+                } else if (currentListType === 'sexy') {
+                    if (order === 'new') {
+                        return sexyNames.indexOf(nameA) - sexyNames.indexOf(nameB);
+                    } else if (order === 'old') {
+                        return sexyNames.indexOf(nameB) - sexyNames.indexOf(nameA);
+                    } else if (order === 'alpha') {
+                        return nameA.localeCompare(nameB);
+                    }
+                }
+            });
+            nameList.innerHTML = '';
+            names.forEach(name => nameList.appendChild(name));
+        }
+    </script>
+</body>
+</html>
